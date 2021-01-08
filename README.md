@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Inka Middleware Telegram
 
 Software encargado de conectar Telegram unificando en un mismo chat de servicio al cliente en el proyecto core de Inka.
@@ -147,3 +148,8 @@ Y si todo sale bien, deberíamos recibir una confirmación en el teléfono y un 
 }
 ```
 
+=======
+# inka-telegram
+
+Proyecto Python de Inka para Telegram
+>>>>>>> 747ac5c3e2e1a75231124397b64cf89d457faffe
