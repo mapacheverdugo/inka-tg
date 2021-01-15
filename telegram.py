@@ -36,7 +36,7 @@ class Telegram:
         self.message_cb = message_cb
 
     async def emit_message(self, message):
-        await self.message_cb(message, host)
+        await self.message_cb(message, self.host)
 
     async def login(self):
         try:
