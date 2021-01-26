@@ -8,31 +8,35 @@ from multiprocessing import Process
 from threading import Thread
 
 from telegram import Telegram
-from postgresqlhandler import PostgreSQLHandler
 from socket_server import SocketServer
 from socket_client import SocketClient
 from http_server import HttpServer
 
 load_dotenv()
 
-logging.basicConfig(
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    level=logging.INFO,
-    handlers=[
-        logging.FileHandler("main.log"),
-        logging.StreamHandler()
-    ]
-)
+logger = logging.getLogger('main_app')
+logger.setLevel(logging.INFO)
+
+stream_formatter = logging.Formatter('[%(levelname)s] %(message)s')
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(stream_formatter)
+logger.addHandler(stream_handler)
+
+file_formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+file_handler = logging.FileHandler("main.log")
+file_handler.setFormatter(file_formatter)
+logger.addHandler(file_handler)
+
 logging.getLogger('telethon').setLevel(level=logging.WARNING)
 logging.getLogger('werkzeug').setLevel(level=logging.WARNING)
 
-""" que = queue.Queue(-1)
-queue_handler = QueueHandler(que)
-handler = logging.PostgreSQLHandler()
-listener = QueueListener(que, handler)
-root = logging.getLogger()
-root.addHandler(queue_handler)
-listener.start() """
+db_config = {
+    "host": os.getenv("PGHOST"),
+    "database": os.getenv("PGDATABASE"),
+    "port": os.getenv("PGPORT"),
+    "user": os.getenv("PGUSER"),
+    "password": os.getenv("PGPASSWORD")
+}
 
 rows = []
 tgs = []
@@ -61,13 +65,7 @@ async def init_server():
 
 async def listen_telegrams():
     try:
-        conn = psycopg2.connect(
-            host = os.getenv("PGHOST"),
-            database = os.getenv("PGDATABASE"),
-            port = os.getenv("PGPORT"),
-            user = os.getenv("PGUSER"),
-            password = os.getenv("PGPASSWORD")
-        )
+        conn = psycopg2.connect(**db_config)
 
         cursor = conn.cursor()
         query = "SELECT * FROM inka_app WHERE app_activo = 1"
@@ -95,7 +93,7 @@ async def listen_telegrams():
         await asyncio.gather(*tasks)
 
     except:
-        logging.error('Error inesperado: %s', sys.exc_info())
+        logger.error('Error inesperado: %s', sys.exc_info())
         raise
 
 def _init_server():
@@ -119,7 +117,7 @@ async def main():
         thread3.start()
         pass
     except:
-        logging.error('Error inesperado: %s', sys.exc_info())
+        logger.error('Error inesperado: %s', sys.exc_info())
         raise
     
 asyncio.run(main())

@@ -4,6 +4,8 @@ import asyncio
 import logging
 from threading import Thread
 
+logger = logging.getLogger('main_app')
+
 HOST = '0.0.0.0'
 
 class SocketServer:
@@ -12,10 +14,10 @@ class SocketServer:
         self.on_message = on_message
 
     def handle_message(self, data):
-        logging.debug('Recibido: %s', data)
+        logger.debug('Recibido: %s', data)
         type = data['type']
         if (type == "RELOAD_CONFIGURATION"):
-            logging.info('Recargando configuraciones...')
+            logger.info('Recargando configuraciones...')
         elif (type == "RESPONSE_MESSAGE"):
             asyncio.run(self.on_message(data))
             
@@ -26,12 +28,12 @@ class SocketServer:
         sock.bind((HOST, self.port))
         sock.listen()
 
-        logging.info('Socket esperando conexión en %s puerto %s', HOST, self.port)
+        logger.info('Socket esperando conexión en %s puerto %s', HOST, self.port)
         
         while True:
             connection, client_address = sock.accept()
 
-            logging.debug('Nueva conexión desde %s', client_address)
+            logger.debug('Nueva conexión desde %s', client_address)
 
             try:
                 while True:
@@ -51,10 +53,10 @@ class SocketServer:
                         response += "\n"
                         connection.sendall(response.encode())
                     else:
-                        logging.debug('No se recibió información desde %s', client_address)
+                        logger.debug('No se recibió información desde %s', client_address)
                         break
             finally:
-                logging.debug('Conexión con %s cerrada', client_address)
+                logger.debug('Conexión con %s cerrada', client_address)
                 connection.close()
         
         sock.close()

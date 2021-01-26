@@ -2,6 +2,8 @@ import socket
 import json
 import logging
 
+logger = logging.getLogger('main_app')
+
 class SocketClient:
     def __init__(self, host, port):
         self.host = host
@@ -19,12 +21,12 @@ class SocketClient:
             message_ready += "\n"
             
             sock.send(message_ready.encode())
-            logging.debug('Enviado: %s', message)
+            logger.debug('Enviado: %s', message)
             pass
         except:
-            logging.error('Error inesperado: %s', sys.exc_info())
+            logger.error('Error inesperado: %s', sys.exc_info())
             raise
         finally:
-            logging.debug('Conexión con socket cerrada')
+            logger.debug('Conexión con socket cerrada')
             sock.close()
         

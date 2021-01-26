@@ -5,6 +5,9 @@ import sqlite3
 import logging
 import time
 import calendar
+import queue
+from logging.handlers import QueueHandler, QueueListener
+from postgresqlhandler import PostgreSQLHandler
 
 from dotenv import load_dotenv
 from threading import Thread
@@ -19,6 +22,34 @@ from telethon.utils import is_image, is_audio, is_video, is_gif
 from telethon.sessions import SQLiteSession
 
 load_dotenv()
+
+db_config = {
+    "host": os.getenv("PGHOST"),
+    "database": os.getenv("PGDATABASE"),
+    "port": os.getenv("PGPORT"),
+    "user": os.getenv("PGUSER"),
+    "password": os.getenv("PGPASSWORD")
+}
+
+logger = logging.getLogger('telegram_app')
+logger.setLevel(logging.INFO)
+
+stream_formatter = logging.Formatter('[%(levelname)s] [%(social)s - %(usuario)s] %(message)s')
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(stream_formatter)
+logger.addHandler(stream_handler)
+
+file_formatter = logging.Formatter('%(asctime)s [%(levelname)s] [%(social)s - %(usuario)s] %(message)s')
+file_handler = logging.FileHandler("main.log")
+file_handler.setFormatter(file_formatter)
+logger.addHandler(file_handler)
+
+que = queue.Queue(-1)
+queue_handler = QueueHandler(que)
+handler = PostgreSQLHandler(db_config, "inka_logs")
+listener = QueueListener(que, handler)
+logger.addHandler(queue_handler)
+listener.start()
 
 IMAGE_TYPE = "image"
 VIDEO_TYPE = "video"
@@ -42,20 +73,49 @@ class Telegram:
 
     async def login(self):
         try:
-            logging.info('[Telegram - +%s] Intentando iniciar sesión...', self.phone)
+            logger.info(
+                'Intentando iniciar sesión...',
+                extra={
+                    "usuario": self.phone,
+                    "appKey": self.app_key,
+                    "social": "Telegram"
+                }
+            )
 
             res = await self.client.sign_in(self.phone)
 
             if (not isinstance(res, User)):
-                logging.info('[Telegram - +%s] Usuario nuevo. Debe realizar proceso de inicio con la API', self.phone)
+                logger.info(
+                    'Usuario nuevo. Debe realizar proceso de inicio con la API',
+                    extra={
+                        "usuario": self.phone,
+                        "appKey": self.app_key,
+                        "social": "Telegram"
+                    }
+                )
                 return False
                 
             else:
-                logging.info('[Telegram - +%s] Sesión iniciada correctamente. Escuchando mensajes...', self.phone)
+                logger.info(
+                    'Sesión iniciada correctamente. Escuchando mensajes...',
+                    extra={
+                        "usuario": self.phone,
+                        "appKey": self.app_key,
+                        "social": "Telegram"
+                    }
+                )
                 return True
             pass
         except:
-            logging.error('[Telegram - +%s] Error inesperado: %s', self.phone, sys.exc_info())
+            logger.error(
+                'Error inesperado: %s',
+                sys.exc_info(),
+                extra={
+                    "usuario": self.phone,
+                    "appKey": self.app_key,
+                    "social": "Telegram"
+                }
+            )
             raise
         
     async def listen(self):
@@ -65,7 +125,15 @@ class Telegram:
                 parsed = await self.parse_message(event)
                 await self.emit_message(parsed)
         except:
-            logging.error('[Telegram - +%s] Error inesperado: %s', self.phone, sys.exc_info())
+            logger.error(
+                'Error inesperado: %s',
+                sys.exc_info(),
+                extra={
+                    "usuario": self.phone,
+                    "appKey": self.app_key,
+                    "social": "Telegram"
+                }
+            )
             raise
         
      
@@ -83,7 +151,15 @@ class Telegram:
 
             
         except:
-            logging.error('[Telegram - +%s] Error inesperado: %s', self.phone, sys.exc_info())
+            logger.error(
+                'Error inesperado: %s',
+                sys.exc_info(),
+                extra={
+                    "usuario": self.phone,
+                    "appKey": self.app_key,
+                    "social": "Telegram"
+                }
+            )
             raise
 
     async def upload_file(self, media):
@@ -98,7 +174,15 @@ class Telegram:
         try:
             ftp.connect(os.getenv("FTP_HOST"), int(os.getenv("FTP_PORT")))
             ftp.login(os.getenv("FTP_USER"), os.getenv("FTP_PASSWORD"))
-            logging.debug('[Telegram - +%s] Conectado correctamente a servidor FTP %s', self.phone, os.getenv("FTP_HOST"))
+            logger.debug(
+                'Conectado correctamente a servidor FTP %s',
+                os.getenv("FTP_HOST"),
+                extra={
+                    "usuario": self.phone,
+                    "appKey": self.app_key,
+                    "social": "Telegram"
+                }
+            )
 
             gmt = time.gmtime()
             ts = calendar.timegm(gmt)
@@ -135,7 +219,15 @@ class Telegram:
 
             url = os.getenv("FTP_URL") + "/" + file_full_name
         except:
-            logging.error('[Telegram - +%s] Error inesperado: %s', self.phone, sys.exc_info())
+            logger.error(
+                'Error inesperado: %s',
+                sys.exc_info(),
+                extra={
+                    "usuario": self.phone,
+                    "appKey": self.app_key,
+                    "social": "Telegram"
+                }
+            )
             raise
         finally:
             ftp.close()
@@ -204,7 +296,15 @@ class Telegram:
 
             return dict
         except:
-            logging.error('[Telegram - +%s] Error inesperado: %s', self.phone, sys.exc_info())
+            logger.error(
+                'Error inesperado: %s',
+                sys.exc_info(),
+                extra={
+                    "usuario": self.phone,
+                    "appKey": self.app_key,
+                    "social": "Telegram"
+                }
+            )
             raise
         finally:
             conn.close()
@@ -245,7 +345,15 @@ class Telegram:
                 else:
                     await self.client.send_message(user, mensaje)
         except:
-            logging.error('[Telegram - +%s] Error inesperado: %s', self.phone, sys.exc_info())
+            logger.error(
+                'Error inesperado: %s',
+                sys.exc_info(),
+                extra={
+                    "usuario": self.phone,
+                    "appKey": self.app_key,
+                    "social": "Telegram"
+                }
+            )
             raise
         finally:
             conn.close()
