@@ -9,6 +9,8 @@ import calendar
 from dotenv import load_dotenv
 from threading import Thread
 from ftplib import FTP, FTP_TLS
+from PIL import Image
+import ffmpeg
 
 from telethon import TelegramClient, events
 from telethon.tl.types import PeerUser, User, UpdateNewMessage, UpdateShortMessage, InputUser
@@ -103,6 +105,24 @@ class Telegram:
             file_name = self.app_key + "-" + str(ts)
             file_path = await self.client.download_media(media, './temp/' + file_name)
             file_full_name = file_path.split("/")[-1]
+
+            if (is_image(file_path)):
+                file_type = "image"
+                image = Image.open(file_path)
+                image.save(file_path, quality=20, optimize=True)
+            elif (is_video(file_path)):
+                file_type = "video"
+                stream = ffmpeg.input(file_path)
+                stream = stream.output(file_path, vcodec="libx264", crf="28")
+                stream = stream.overwrite_output()
+                out, err = stream.run(capture_stdout=True, capture_stderr=True)
+            elif (is_audio(file_path)):
+                file_type = "audio"
+                stream = ffmpeg.input(file_path)
+                stream = stream.output(file_path, **{'map': '0:a', 'map_metadata': -1, 'b:a': '64k'})
+                stream = stream.overwrite_output()
+                out, err = stream.run(capture_stdout=True, capture_stderr=True)
+
             file = open(file_path, 'rb')
 
             if os.path.exists(file_path):
@@ -110,13 +130,6 @@ class Telegram:
 
             ftp.cwd(os.getenv("FTP_PATH"))
             ftp.storbinary("STOR " + file_full_name, file)
-
-            if (is_image(file_path)):
-                file_type = "image"
-            elif (is_video(file_path)):
-                file_type = "video"
-            elif (is_audio(file_path)):
-                file_type = "audio"
 
             file.close()
 

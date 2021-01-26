@@ -124,24 +124,24 @@ def login(appKey, code, hash):
         'message': 'No se encontró Telegram con ese appKey'
     }
 
-@app.route('/code', methods=['POST'])
+@app.route('/telegram/code', methods=['POST'])
 def _code1():
     json = request.get_json(force=True)
     return code(json["appKey"])
 
-@app.route('/login', methods=['POST'])
+@app.route('/telegram/login', methods=['POST'])
 def _login1(appKey, code, hash):
     json = request.get_json(force=True)
     return login(json["appKey"], json["code"], json["phoneCodeHash"])
 
 # Para pruebas
-@app.route('/code/<appKey>', methods=['GET'])
+""" @app.route('/code/<appKey>', methods=['GET'])
 def _code2(appKey):
     return code(appKey)
 
 @app.route('/login/<appKey>/<code>/<hash>', methods=['GET'])
 def _login2(appKey, code, hash):
-    return login(appKey, code, hash)
+    return login(appKey, code, hash) """
 
 
 

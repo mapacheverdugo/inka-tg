@@ -8,11 +8,13 @@ from multiprocessing import Process
 from threading import Thread
 
 from telegram import Telegram
+from postgresqlhandler import PostgreSQLHandler
 from socket_server import SocketServer
 from socket_client import SocketClient
 from http_server import HttpServer
 
 load_dotenv()
+
 logging.basicConfig(
     format='%(asctime)s [%(levelname)s] %(message)s',
     level=logging.INFO,
@@ -23,6 +25,14 @@ logging.basicConfig(
 )
 logging.getLogger('telethon').setLevel(level=logging.WARNING)
 logging.getLogger('werkzeug').setLevel(level=logging.WARNING)
+
+""" que = queue.Queue(-1)
+queue_handler = QueueHandler(que)
+handler = logging.PostgreSQLHandler()
+listener = QueueListener(que, handler)
+root = logging.getLogger()
+root.addHandler(queue_handler)
+listener.start() """
 
 rows = []
 tgs = []

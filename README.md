@@ -97,10 +97,10 @@ Deberá iniciar sesión a través de una API HTTP montada dentro del mismo servi
 
 1. Lo primero es configurar la cuenta de Telegram en la base de datos como se mostro anteriormente.
 2. Iniciar el programa para así habilitar el servidor HTTP.
-3. Enviarle al programa la siguiente petición `POST` al endpoint `/code` para recibir un código de inicio de sesión en nuestro teléfono.
+3. Enviarle al programa la siguiente petición `POST` al endpoint `/telegram/code` para recibir un código de inicio de sesión en nuestro teléfono.
 
 ```
-POST /code HTTP/1.1
+POST /telegram/code HTTP/1.1
 Content-Type: application/json
 
 {
@@ -123,10 +123,10 @@ Lo que arrojará una respuesta como la siguiente
 }
 ```
 
-4. Enviarle al programa el código de inicio de sesión recibido, a través de otra petición `POST` al endpoint `/login`.
+4. Enviarle al programa el código de inicio de sesión recibido, a través de otra petición `POST` al endpoint `/telegram/login`.
 
 ```
-POST /login HTTP/1.1
+POST /telegram/login HTTP/1.1
 Content-Type: application/json
 
 {
